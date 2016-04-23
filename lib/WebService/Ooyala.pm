@@ -57,8 +57,6 @@ sub new {
 	$self->{api_version} 	= $params->{api_version} || "v2";
 	$self->{agent}          = LWP::UserAgent->new(agent => "perl/$], WebService::Ooyala/" . $VERSION);
 
-	use Data::Dumper;
-	#print Dumper($self);
 
 	bless $self, $class;
 
@@ -95,9 +93,6 @@ sub send_request {
 	} else {
 		$base_url = $self->{cache_base_url};
 	}
-	#print "SEND REQUEST\n";
-
-	#print "BASE_URL: $base_url URL: $url\n";
 
 	print "$base_url$url\n";
 	
@@ -105,8 +100,6 @@ sub send_request {
 	if($http_method eq 'GET') {
 		$resp = $self->{agent}->get("https://".$base_url.$url);
 
-		use Data::Dumper;
-		print Dumper($resp->headers()->as_string());
 		if($resp->is_success) {
 			return decode_json($resp->decoded_content);
 		}
@@ -119,9 +112,6 @@ sub generate_signature {
 
 	my $signature = $self->{secret_key} . uc($http_method) . $path;
 
-	use Data::Dumper;
-	#print "GENERATE SIGNATURE:\n";
-	#print Dumper($params);
 	foreach my $key(sort keys %$params) {
 		$signature .= $key . "=" . $params->{$key};
 	}
@@ -132,7 +122,6 @@ sub generate_signature {
  #                         signature = base64.b64encode(hashlib.sha256(signature).digest())[0:43]
  #                                 signature = urllib.quote_plus(signature)
 	$signature =  sha256_base64($signature);
-	#print STDERR "Signature: $signature\n";
 	return $signature;
 }
 
@@ -270,7 +259,7 @@ L<http://search.cpan.org/dist/WebService-Ooyala/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2014 Tim Vroom.
+Copyright 2016 Tim Vroom.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the the Artistic License (2.0). You may obtain a
