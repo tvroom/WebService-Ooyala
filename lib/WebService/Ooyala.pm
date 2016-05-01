@@ -21,7 +21,6 @@ Version 0.01
 
 our $VERSION = '0.01';
 
-
 =head1 SYNOPSIS
 
 Quick summary of what the module does.
@@ -49,14 +48,16 @@ sub new {
 	$params ||= {};
 
 	my $self = {};
-	$self->{api_key} 	= $params->{api_key};
-	$self->{secret_key} 	= $params->{secret_key};
-	$self->{base_url} 	= $params->{base_url} || "api.ooyala.com";
-	$self->{cache_base_url} = $params->{cache_base_url} || "cdn-api.ooyala.com";
-	$self->{expiration} 	= $params->{expiration} || 15;
-	$self->{api_version} 	= $params->{api_version} || "v2";
-	$self->{agent}          = LWP::UserAgent->new(agent => "perl/$], WebService::Ooyala/" . $VERSION);
-
+	$self->{api_key}    = $params->{api_key};
+	$self->{secret_key} = $params->{secret_key};
+	$self->{base_url}   = $params->{base_url} || "api.ooyala.com";
+	$self->{cache_base_url} =
+		$params->{cache_base_url} || "cdn-api.ooyala.com";
+	$self->{expiration}  = $params->{expiration}  || 15;
+	$self->{api_version} = $params->{api_version} || "v2";
+	$self->{agent} =
+		LWP::UserAgent->new(
+		agent => "perl/$], WebService::Ooyala/" . $VERSION);
 
 	bless $self, $class;
 
@@ -71,7 +72,7 @@ sub expires {
 sub send_request {
 	my($self, $http_method, $relative_path, $body, $params) = @_;
 
-	my $path = "/" .$self->{api_version} . "/" . $relative_path;
+	my $path = "/" . $self->{api_version} . "/" . $relative_path;
 
 # TODO Convert the body to JSON format
 #         json_body = ''
@@ -80,12 +81,14 @@ sub send_request {
 #
 	my $json_body = {};
 
-	my $url = $self->build_path_with_authentication_params($http_method, $path, $params, "");
-	
+	my $url =
+		$self->build_path_with_authentication_params($http_method, $path,
+		$params, "");
+
 	# CHECK
-	if(!$url) {
+	if (!$url) {
 		return undef;
-	} 
+	}
 
 	my $base_url;
 	if ($http_method ne 'GET') {
@@ -95,12 +98,12 @@ sub send_request {
 	}
 
 	print "$base_url$url\n";
-	
-	my $resp;
-	if($http_method eq 'GET') {
-		$resp = $self->{agent}->get("https://".$base_url.$url);
 
-		if($resp->is_success) {
+	my $resp;
+	if ($http_method eq 'GET') {
+		$resp = $self->{agent}->get("https://" . $base_url . $url);
+
+		if ($resp->is_success) {
 			return decode_json($resp->decoded_content);
 		}
 	}
@@ -112,16 +115,16 @@ sub generate_signature {
 
 	my $signature = $self->{secret_key} . uc($http_method) . $path;
 
-	foreach my $key(sort keys %$params) {
+	foreach my $key (sort keys %$params) {
 		$signature .= $key . "=" . $params->{$key};
 	}
 
- # TODO This is neccesary on python 2.7. if missing, signature+=body with raise an exception when body are bytes (image data)
- #         signature = signature.encode('ascii')
- #                 signature += body
- #                         signature = base64.b64encode(hashlib.sha256(signature).digest())[0:43]
- #                                 signature = urllib.quote_plus(signature)
-	$signature =  sha256_base64($signature);
+# TODO This is neccesary on python 2.7. if missing, signature+=body with raise an exception when body are bytes (image data)
+#         signature = signature.encode('ascii')
+#                 signature += body
+#                         signature = base64.b64encode(hashlib.sha256(signature).digest())[0:43]
+#                                 signature = urllib.quote_plus(signature)
+	$signature = sha256_base64($signature);
 	return $signature;
 }
 
@@ -134,7 +137,7 @@ sub build_path {
 	my($self, $path, $params) = @_;
 	my $url = $path . '?';
 	foreach (keys %$params) {
-		$url .= "&$_="  . uri_escape($params->{$_});
+		$url .= "&$_=" . uri_escape($params->{$_});
 	}
 	return $url;
 }
@@ -142,19 +145,21 @@ sub build_path {
 sub build_path_with_authentication_params {
 	my($self, $http_method, $path, $params, $body) = @_;
 
- # TODO
- #if (http_method not in HTTP_METHODS) or (self.api_key is None) or (self.secret_key is None):
- #           return None
- 
+# TODO
+#if (http_method not in HTTP_METHODS) or (self.api_key is None) or (self.secret_key is None):
+#           return None
+
 	$params ||= {};
 	my $authentication_params = {%$params};
 	$authentication_params->{api_key} = $self->{api_key};
 	$authentication_params->{expires} = $self->expires();
-	$authentication_params->{signature} = $self->generate_signature($http_method, $path, $authentication_params, $body);
+	$authentication_params->{signature} =
+		$self->generate_signature($http_method, $path,
+		$authentication_params, $body);
 	return $self->build_path($path, $authentication_params);
 
 }
-	
+
 sub get_api_key {
 	my $self = shift;
 	return $self->{api_key};
@@ -195,7 +200,6 @@ sub set_cache_base_url {
 	$self->{cache_base_url} = $cache_base_url;
 }
 
-
 sub get_expiration_window {
 	my $self = shift;
 	return $self->{expiration};
@@ -208,7 +212,7 @@ sub set_expiration_window {
 
 sub del_expiration_window {
 	my $self = shift;
-	$self->{expiration} = 0; 
+	$self->{expiration} = 0;
 }
 
 =head1 AUTHOR
@@ -300,4 +304,4 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =cut
 
-1; # End of WebService::Ooyala
+1;    # End of WebService::Ooyala
