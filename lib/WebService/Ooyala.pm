@@ -11,7 +11,10 @@ use JSON;
 
 =head1 NAME
 
-WebService::Ooyala - The great new WebService::Ooyala!
+WebService::Ooyala - Perl interface to Ooyala's API, currently only read
+operations (GET requests) are supported
+
+Support for create, update, and delete (PUT, POST, DELETE) operations will be added in future releases.
 
 =head1 VERSION
 
@@ -23,14 +26,19 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
+    my $ooyala = WebService::Ooyala->new({ api_key => $api_key, secret_key => $secret_key });
 
-Perhaps a little code snippet.
+    # Grab all video assets (or at least the first page)
+    my $data = $ooyala->get("assets");
 
-    use WebService::Ooyala;
+    foreach my $video(@{$data->{items}}) {
+        print "$video->{embed_code} $video->{name}\n";
+    }
 
-    my $foo = WebService::Ooyala->new();
-    ...
+    # Get a particular video based on embed_code
+
+    my $video = $data->get("assets/$embed_code");
+
 
 =head1 EXPORT
 
