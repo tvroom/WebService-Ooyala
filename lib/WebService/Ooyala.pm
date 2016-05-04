@@ -82,11 +82,6 @@ sub send_request {
 
 	my $path = "/" . $self->{api_version} . "/" . $relative_path;
 
-# TODO Convert the body to JSON format
-#         json_body = ''
-#                 if (body is not None):
-#                             json_body = json.dumps(body) if type(body) is not str else body
-#
 	my $json_body = {};
 
 	my $url =
@@ -127,11 +122,6 @@ sub generate_signature {
 		$signature .= $key . "=" . $params->{$key};
 	}
 
-# TODO This is neccesary on python 2.7. if missing, signature+=body with raise an exception when body are bytes (image data)
-#         signature = signature.encode('ascii')
-#                 signature += body
-#                         signature = base64.b64encode(hashlib.sha256(signature).digest())[0:43]
-#                                 signature = urllib.quote_plus(signature)
 	$signature = sha256_base64($signature);
 	return $signature;
 }
@@ -152,10 +142,6 @@ sub build_path {
 
 sub build_path_with_authentication_params {
 	my($self, $http_method, $path, $params, $body) = @_;
-
-# TODO
-#if (http_method not in HTTP_METHODS) or (self.api_key is None) or (self.secret_key is None):
-#           return None
 
 	$params ||= {};
 	my $authentication_params = {%$params};
