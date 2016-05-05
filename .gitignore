@@ -17,3 +17,5 @@ pm_to_blib
 WebService-Ooyala-*
 WebService-Ooyala-*.tar.gz
 .DS_store
+*.bak
+*.tdy
