@@ -466,9 +466,6 @@ L<http://search.cpan.org/dist/WebService-Ooyala/>
 =back
 
 
-=head1 ACKNOWLEDGEMENTS
-
-
 =head1 LICENSE AND COPYRIGHT
 
 Copyright 2016 Tim Vroom.
