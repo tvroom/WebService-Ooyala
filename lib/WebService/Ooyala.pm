@@ -50,6 +50,8 @@ Create a new WebService::Ooyala object with hashref of parameters
 
 Accepts the following parmeters
 
+=over 4
+
 =item * api_key
 
 Required parameter. Ooyala api_key
@@ -139,11 +141,31 @@ sub get {
 	return $self->send_request('GET', $path, '', $params);
 }
 
+=head2 expires
+
+Calculates expiration time
+
+$ooyala->expires()
+
+=cut
+
 sub expires {
 	my($self) = @_;
 	my $now_plus_window = time() + $self->{expiration};
 	return $now_plus_window + 300 - ($now_plus_window % 300);
 }
+
+=head2 send_request
+
+$ooyala->send_request($http_method, $relative_path, $body, $params);
+
+$ooyala->send_request("GET", "assets", "", {})
+
+Handles sending request to ooyala's API, suggest using simpler
+
+$ooyala->get(..) (which calls this) from your application
+
+=cut
 
 sub send_request {
 	my($self, $http_method, $relative_path, $body, $params) = @_;
@@ -185,6 +207,14 @@ sub send_request {
 	}
 }
 
+=head2 generate_signature
+
+    Generates signature needed to send API request based on payload
+
+    $ooyala->($http_method, $path, $params, $body);
+
+=cut
+
 sub generate_signature {
 	my($self, $http_method, $path, $params, $body) = @_;
 	$body ||= '';
@@ -199,6 +229,14 @@ sub generate_signature {
 	return $signature;
 }
 
+=head2 build_path
+
+    Builds path up with parameters
+
+    $ooyala->build_path($path, $params(
+
+=cut
+
 sub build_path {
 	my($self, $path, $params) = @_;
 	my $url = $path . '?';
@@ -207,6 +245,15 @@ sub build_path {
 	}
 	return $url;
 }
+
+=head2 build_path_with_authentication_params
+
+    Builds path with authentication and expiration parameters
+
+    $ooyala->build_path_with_authentication_params($http_method, $path,
+    $params, $body);
+
+=cut
 
 sub build_path_with_authentication_params {
 	my($self, $http_method, $path, $params, $body) = @_;
@@ -222,57 +269,145 @@ sub build_path_with_authentication_params {
 
 }
 
+=head2 get_api_key
+
+    Gets current ooyala api_key
+
+    my $api_key = $ooylaa->get_api_key();
+
+=cut
+
 sub get_api_key {
 	my $self = shift;
 	return $self->{api_key};
 }
+
+=head2 set_api_key
+
+    Sets current ooyala api_key
+
+    $ooylaa->set_api_key($api_key);
+
+=cut
 
 sub set_api_key {
 	my($self, $api_key) = @_;
 	$self->{api_key} = $api_key;
 }
 
+=head2 get_secret_key
+
+    Gets current ooyala secret_key
+
+    my $secret_key = $ooyala->get_secret_key()
+
+=cut
+
 sub get_secret_key {
 	my $self = shift;
 	return $self->{secret_key};
 }
+
+=head2 set_secret_key
+
+    Sets current ooyala secret_key
+
+    $ooyala->set_secret_key($secret_key)
+
+=cut
 
 sub set_secret_key {
 	my($self, $secret_key) = @_;
 	$self->{secret_key} = $secret_key;
 }
 
+=head2 get_base_url
+
+    Gets current base_url
+
+    my $base_url = $ooyala->get_base_url();
+
+=cut
+
 sub get_base_url {
 	my $self = shift;
 	return $self->{base_url};
 }
+
+=head2 set_base_url
+
+    Sets current base_url
+
+    $ooyala->set_base_url($base_url)
+
+=cut
 
 sub set_base_url {
 	my($self, $base_url) = @_;
 	$self->{base_url} = $base_url;
 }
 
+=head2 get_cache_base_url
+
+    Gets current cache_base_url
+
+    my $cache_base_url = $ooyala->get_cache_base_url();
+
+=cut
+
 sub get_cache_base_url {
 	my $self = shift;
 	return $self->{cache_base_url};
 }
+
+=head2 set_cache_base_url
+
+    Sets current cache_base_url
+
+    $ooyala->set_cache_base_url($cache_base_url)
+
+=cut
 
 sub set_cache_base_url {
 	my($self, $cache_base_url) = @_;
 	$self->{cache_base_url} = $cache_base_url;
 }
 
-sub get_expiration_window {
+=head2 get_expiration
+
+    Gets current expiration in seconds
+
+    my $expiration = $ooyala->get_expiration();
+
+=cut
+
+sub get_expiration {
 	my $self = shift;
 	return $self->{expiration};
 }
 
-sub set_expiration_window {
+=head2 set_expiration
+
+    Sets current expiration in seconds
+
+    $ooyala->set_expiration($expiration);
+
+=cut
+
+sub set_expiration {
 	my($self, $expiration) = @_;
 	$self->{expiration} = $expiration;
 }
 
-sub del_expiration_window {
+=head2 del_expiration
+
+    Sets current expiration time to 0
+
+    $ooyala->del_expiration()
+
+=cut
+
+sub del_expiration {
 	my $self = shift;
 	$self->{expiration} = 0;
 }
