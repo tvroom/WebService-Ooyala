@@ -40,14 +40,47 @@ our $VERSION = '0.01';
     my $video = $data->get("assets/$embed_code");
 
 
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-
 =head1 SUBROUTINES/METHODS
 
-=head2 function1
+=head2 new
+
+Create a new WebService::Ooyala object with hashref of parameters
+
+    my $ooyala = WebService::Ooyala->new( { api_key => $api_key, secret_key => $secret_key } );
+
+Accepts the following parmeters
+
+=item * api_key
+
+Required parameter. Ooyala api_key
+
+=item * secret_key
+
+Required parameter. Ooyala secret_key
+
+=item * base_url
+
+Optional parameter -- defaults to "api.ooyala.com"
+
+=item * cache_base_url
+
+Optional parameter - defaults to "cdn.api.ooyala.com" for GET requests
+
+=item * expiration
+
+Optional parametter for time to expire url for getting results from API with
+this url -- defaults to 15 (seconds)
+
+=item * api_version
+
+Optional parameter - version of API being called -- defaults to "v2", but this
+module also works for "v3" API requests by changing this parameter
+
+=item * agent
+
+Agent that acts like LWP::UserAgent used for making requests -- module defaults to creating its own if none is provide
+
+=back
 
 =cut
 
@@ -58,6 +91,9 @@ sub new {
 	my $self = {};
 	$self->{api_key}    = $params->{api_key};
 	$self->{secret_key} = $params->{secret_key};
+
+    croak "api_key and secret_key both need to be specified" unless $params->{api_key} && $params->{secret_key};
+
 	$self->{base_url}   = $params->{base_url} || "api.ooyala.com";
 	$self->{cache_base_url} =
 		$params->{cache_base_url} || "cdn-api.ooyala.com";
@@ -69,6 +105,38 @@ sub new {
 
 	bless $self, $class;
 
+}
+
+=head2 get
+
+$ooyala->get($path, $params)
+
+$ooyala->get("assets");
+
+$ooyala->get("assets", { limit => 5 })
+
+$ooyala->get("assets", { limit => 5, where => "labels INCLUDES '$label'" })
+
+Accepts the following parameters:
+
+=over 4
+
+=item * path - path of api request (after version part of api request)
+
+=item * params - hashref of query parameters to be sent as part of API request
+
+=back
+
+-
+
+
+
+
+=cut
+
+sub get {
+	my($self, $path, $params) = @_;
+	return $self->send_request('GET', $path, '', $params);
 }
 
 sub expires {
@@ -88,9 +156,8 @@ sub send_request {
 		$self->build_path_with_authentication_params($http_method, $path,
 		$params, "");
 
-	# CHECK
 	if (!$url) {
-		return undef;
+		croak "No url generated for request in send_request";
 	}
 
 	my $base_url;
@@ -100,15 +167,21 @@ sub send_request {
 		$base_url = $self->{cache_base_url};
 	}
 
-	print "$base_url$url\n";
-
 	my $resp;
 	if ($http_method eq 'GET') {
-		$resp = $self->{agent}->get("https://" . $base_url . $url);
+		my $full_url = "https://" . $base_url . $url;
+		$resp = $self->{agent}->get($full_url);
+
+		unless ($resp->is_success) {
+			croak "Failed to GET $full_url - " . $resp->status_line;
+		}
 
 		if ($resp->is_success) {
 			return decode_json($resp->decoded_content);
 		}
+	} else {
+		croak
+			"Trying to call a method that is not implemented in send_request";
 	}
 }
 
@@ -124,11 +197,6 @@ sub generate_signature {
 
 	$signature = sha256_base64($signature);
 	return $signature;
-}
-
-sub get {
-	my($self, $path, $params) = @_;
-	return $self->send_request('GET', $path, '', $params);
 }
 
 sub build_path {
@@ -208,6 +276,17 @@ sub del_expiration_window {
 	my $self = shift;
 	$self->{expiration} = 0;
 }
+
+=head1 SEE ALSO
+
+Code here is a port of L<Ooyala's Python SDK|https://github.com/ooyala/python-v2-sdk>
+
+L<Ooyala API Documentation|http://support.ooyala.com/developers/documentation/concepts/book_api.html>
+
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to Slashdot for support in release of this module -- early code for
+this was developed as part of the Slashdot code base
 
 =head1 AUTHOR
 
