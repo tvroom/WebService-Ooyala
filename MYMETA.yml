@@ -18,5 +18,10 @@ no_index:
     - t
     - inc
 requires:
+  Carp: '0'
+  Digest::SHA: '0'
+  JSON: '0'
+  LWP::UserAgent: '0'
+  URI::Escape: '0'
   perl: '5.006'
-version: '0.02'
+version: '0.03'
